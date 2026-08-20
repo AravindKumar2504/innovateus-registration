@@ -12,13 +12,15 @@ import { findWorkshop } from '../../src/lib/workshops';
 /**
  * POST /api/register
  *
- * Serverless proxy between the registration form and Directus. It exists so
- * that:
- *  1. the Directus token lives only in server-side env vars — a static site
- *     posting to Directus directly would ship the token in the JS bundle;
- *  2. every field is re-validated and whitelisted here, so the browser can
- *     never write arbitrary data even with hand-crafted requests;
- *  3. trusted values (`consent_at`) are stamped server-side.
+ * Serverless proxy between the registration form and Directus. It exists for
+ * three reasons:
+ *  1. The Directus token lives only in server-side env vars. A static site
+ *     posting to Directus directly would ship the token in the JS bundle,
+ *     where anyone could read it.
+ *  2. Every field is re-validated and whitelisted here, so a hand-crafted
+ *     request can't write anything the real form couldn't.
+ *  3. Values that need to be trustworthy (the consent_at timestamp) are
+ *     stamped here, not in the browser.
  */
 
 const MAX_BODY_BYTES = 20_000;

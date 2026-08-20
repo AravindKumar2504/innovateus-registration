@@ -7,15 +7,23 @@ import SuccessPanel from './SuccessPanel';
 import WorkshopCard from './WorkshopCard';
 import './register.css';
 
+/*
+ * Owns everything around the form: reading the URL params, loading the
+ * series catalog, and switching between the four page states
+ * (loading / error / form / success).
+ */
+
+// A discriminated union instead of separate isLoading/isError booleans, so
+// impossible combinations (loading AND error at once) can't be represented.
 type CatalogState =
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'ready'; series: CatalogSeries[] };
 
 export default function RegistrationPage() {
-  // Query params, read once on mount: ?workshop=<id> registers for a single
-  // workshop; ?season=<name> narrows the series list (both exist on
-  // production links).
+  // Query params are read once on mount (useMemo with no deps). Production
+  // links use both: ?workshop=<id> registers for a single workshop, and
+  // ?season=<name> narrows the series list.
   const { workshop, workshopNotFound, season } = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     const workshopId = params.get('workshop');
@@ -38,6 +46,9 @@ export default function RegistrationPage() {
 
   useEffect(() => {
     if (!needsCatalog) return;
+    // The cancelled flag stops a stale response from overwriting state after
+    // the component unmounts or the effect re-runs (React StrictMode runs
+    // effects twice in dev, which surfaces exactly this kind of race).
     let cancelled = false;
     fetchSeriesCatalog()
       .then((series) => {
@@ -56,6 +67,9 @@ export default function RegistrationPage() {
     setFetchAttempt((attempt) => attempt + 1);
   };
 
+  // "Register for more series" on the success screen. Bumping the key forces
+  // React to unmount and remount the form, which resets every field to its
+  // initial state in one move instead of clearing a dozen useStates by hand.
   const handleReset = () => {
     setResult(null);
     setFormKey((key) => key + 1);

@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react';
 import type { SuccessSummary } from './RegistrationForm';
 
+/*
+ * Post-submit confirmation screen: green "thank you" box (mentioning the
+ * newsletter when the user opted in) plus a navy card per registered series,
+ * mirroring the production success state.
+ */
 interface Props {
   summary: SuccessSummary;
   onReset: () => void;
@@ -9,7 +14,9 @@ interface Props {
 export default function SuccessPanel({ summary, onReset }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
 
-  // Move focus to the confirmation so screen readers announce the outcome.
+  // The form just disappeared from under the user. Moving focus to the
+  // confirmation box makes screen readers announce the outcome instead of
+  // leaving focus on an element that no longer exists.
   useEffect(() => {
     boxRef.current?.focus();
   }, []);

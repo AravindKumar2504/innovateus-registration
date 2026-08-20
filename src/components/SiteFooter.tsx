@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import './footer.css';
 
+/*
+ * Replica of the production footer: the mailing-list banner on the navy
+ * gradient, then logo / links / socials / subscribe columns, then the
+ * Creative Commons line.
+ */
 const SITE = 'https://innovate-us.org';
 
 const FOOTER_LINKS = [

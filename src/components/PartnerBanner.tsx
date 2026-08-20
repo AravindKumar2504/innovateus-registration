@@ -29,7 +29,11 @@ function ExternalIcon() {
   );
 }
 
-/** Blue partner strip pinned above the header, as on production. */
+/**
+ * Blue partner strip above the header, as on production. Desktop shows the
+ * links in a row; under 1150px it collapses into a tap-to-expand toggle
+ * (which layout is visible is decided purely in CSS via media queries).
+ */
 export default function PartnerBanner() {
   const [open, setOpen] = useState(false);
 

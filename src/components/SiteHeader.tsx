@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import './header.css';
 
+/*
+ * Replica of the production InnovateUS header: wordmark, dropdown nav, the
+ * "Sign Up for Updates" pill, and a hamburger menu under 1150px. Nav links
+ * point at the real site since those pages aren't part of this prototype.
+ */
 const SITE = 'https://innovate-us.org';
 
 interface NavItem {
@@ -91,6 +96,9 @@ export default function SiteHeader() {
     };
   }, []);
 
+  // Disclosure pattern: a button with aria-expanded, opening on hover for
+  // mouse users and on click/Enter for keyboard users. Only one menu can be
+  // open at a time because openMenu holds a single label.
   const renderDropdown = (item: NavItem) => {
     const open = openMenu === item.label;
     return (

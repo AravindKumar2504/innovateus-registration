@@ -16,6 +16,17 @@ import { submitRegistration } from '../lib/submit';
 import type { CatalogSeries, RegistrationRequest, Workshop } from '../lib/types';
 import SeriesSelector from './SeriesSelector';
 
+/*
+ * The registration form itself. It works in two modes:
+ *  - series mode (default): the user picks one or more event series
+ *  - workshop mode: the page arrived via ?workshop=<id>, so there is no
+ *    series picker and we submit that single workshop's id instead
+ *
+ * Validation happens twice on purpose. This component validates for fast,
+ * friendly feedback, and the Netlify function validates again as the real
+ * gatekeeper, since anyone can bypass the browser and POST directly.
+ */
+
 /** What the success screen needs to know about a completed registration. */
 export interface SuccessSummary {
   firstName: string;
@@ -33,6 +44,10 @@ interface Props {
 
 type FieldErrors = Partial<Record<string, string>>;
 
+// One DOM id per field, keyed by the same names the server uses in its
+// fieldErrors response. That lets us reuse this map for three jobs:
+// wiring <label htmlFor>, pointing aria-describedby at the right error
+// message, and focusing the first invalid field after a failed submit.
 const FIELD_IDS: Record<string, string> = {
   email: 'reg-email',
   first_name: 'reg-first-name',
@@ -57,6 +72,8 @@ function RequiredMark() {
 }
 
 export default function RegistrationForm({ workshop, seriesList, onSuccess }: Props) {
+  // Every input below is a controlled component: React state is the single
+  // source of truth and each onChange writes back into it.
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -72,6 +89,10 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Derived on every render instead of stored in state, so the conditional
+  // fields can never drift out of sync with the answers that control them.
+  // The rules come straight from the production form: State only shows for
+  // US registrants, the level question only for "Yes" government answers.
   const showState = country === 'United States';
   const showGovLevel = govOrg !== '' && isGovYes(govOrg);
 
@@ -104,6 +125,9 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
     return found;
   };
 
+  // After a failed submit, move keyboard focus to the first invalid field.
+  // Sighted users get the scroll, screen reader users get the field (and its
+  // error text via aria-describedby) announced without hunting for it.
   const focusFirstError = (found: FieldErrors) => {
     const firstKey = Object.keys(FIELD_IDS).find((key) => found[key]);
     const id = firstKey ? FIELD_IDS[firstKey] : found.series ? 'series-selector' : null;
@@ -127,6 +151,11 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
     }
     setErrors({});
 
+    // Build the request body. The conditional spreads mean hidden fields are
+    // omitted entirely rather than sent as empty strings, which keeps the
+    // payload matching what the user could actually see. In workshop mode we
+    // send only the id; the server looks up the title and series itself so a
+    // crafted request can't store made-up workshop names.
     const chosenSeries = seriesList.filter((series) => selectedSeries.has(series.id));
     const payload: RegistrationRequest = {
       email: email.trim(),
@@ -162,6 +191,8 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
       return;
     }
 
+    // The server can reject things the client checks can't know about, so
+    // its field-level errors render exactly like local validation errors.
     if (response.fieldErrors) {
       setErrors(response.fieldErrors);
       focusFirstError(response.fieldErrors);
@@ -169,6 +200,9 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
     setFormError(response.error ?? 'Something went wrong. Please try again.');
   };
 
+  // Shared aria wiring for any field that can be invalid: flag it with
+  // aria-invalid and point aria-describedby at its error message element so
+  // screen readers read the error together with the label.
   const errorProps = (key: string) => ({
     'aria-invalid': errors[key] ? true : undefined,
     'aria-describedby': errors[key] ? `${FIELD_IDS[key]}-error` : undefined,
@@ -191,6 +225,8 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
         </p>
       </div>
 
+      {/* Invisible live region so screen readers hear "submitting" progress;
+          the visible error alert below announces itself via role="alert". */}
       <div aria-live="polite" className="sr-only">
         {submitting ? 'Submitting your registration…' : ''}
       </div>
@@ -200,6 +236,8 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
         </div>
       )}
 
+      {/* noValidate turns off the browser's own validation bubbles so our
+          styled, screen-reader-friendly messages are the only ones shown. */}
       <form className="registration-form" noValidate onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor={FIELD_IDS.email}>

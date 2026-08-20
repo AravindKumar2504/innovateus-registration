@@ -1,8 +1,13 @@
 import type { Workshop } from '../lib/types';
 
+// Series icons are hosted on the Burnes Center's Directus, same as production.
 const ASSET_BASE = 'https://directus.theburnescenter.org/assets';
 
-/** Details card shown when registering for a single workshop. */
+/**
+ * Details card shown above the form in ?workshop=<id> mode. Layout follows
+ * the production workshop card: navy series header, serif title, and a
+ * two-column definition list for the logistics.
+ */
 export default function WorkshopCard({ workshop }: { workshop: Workshop }) {
   const details: [string, string][] = [
     ['Date:', workshop.date],
