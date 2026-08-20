@@ -5,7 +5,8 @@ with a new **weekly-newsletter opt-in** field, storing submissions in the Burnes
 headless CMS (Directus). Built as a take-home assignment for the Burnes Center Web Developer
 intern role.
 
-**Live demo:** _deployed on Netlify — link in the submission email_
+**Live demo:** https://innovateus-registration-ak.netlify.app
+(single-workshop flow: [`/register?workshop=prompting-lab-2026-09-11`](https://innovateus-registration-ak.netlify.app/register?workshop=prompting-lab-2026-09-11))
 
 ## Stack
 

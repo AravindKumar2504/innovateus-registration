@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import handler from './register.mts';
+import handler from '../netlify/functions/register.mts';
 
 /**
  * Unit tests for the registration function — the piece that owns all
