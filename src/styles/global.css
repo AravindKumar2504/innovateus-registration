@@ -1,0 +1,119 @@
+/*
+ * Design tokens extracted from the production InnovateUS site
+ * (innovate-us.org) so the prototype conforms to the existing design.
+ */
+:root {
+  --font-sans: 'Libre Franklin', sans-serif;
+  --font-serif-text: 'DM Serif Text', georgia, serif;
+  --font-serif-display: 'DM Serif Display', georgia, serif;
+
+  /* Brand blues */
+  --color-primary: #0066cc;
+  --color-primary-hover: #0052a3;
+  --color-brand-navy: #124d8f;
+  --color-label-navy: #1a365d;
+  --color-header-navy: #142941;
+  --color-banner-blue: #376bd1;
+
+  /* Page + surfaces */
+  --color-page-bg: #e4effc;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1a;
+
+  /* Form */
+  --color-input-text: #2d3748;
+  --color-border: #e2e8f0;
+  --color-placeholder: #9ca3af;
+  --color-muted: #4a5568;
+  --color-subtle: #6b7280;
+  --color-danger: #dc3545;
+
+  /* Footer */
+  --color-footer-top: #134175;
+  --color-footer-mid: #142941;
+  --color-blue-100: #bcd8f6;
+  --color-blue-200: #8db6e9;
+  --color-footer-white: #f9fbff;
+  --color-banner-cream: #f8f6f1;
+
+  /* Feedback */
+  --color-success-bg: #d4edda;
+  --color-success-border: #c3e6cb;
+  --color-success-text: #155724;
+  --color-error-bg: #ffeeee;
+  --color-error-border: #ffcccc;
+  --color-error-text: #cc3333;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-brand-navy);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Visually hidden but available to screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border-width: 0;
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-surface);
+  color: var(--color-brand-navy);
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

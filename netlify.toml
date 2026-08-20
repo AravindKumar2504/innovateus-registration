@@ -1,0 +1,21 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+# `npm run dev` wraps `netlify dev`; point it at the raw Vite server so
+# framework auto-detection doesn't re-invoke the npm script recursively.
+[dev]
+  command = "npm run dev:web"
+  targetPort = 5173
+  port = 8888
+  framework = "#custom"
+
+# SPA fallback: serve index.html for client-side routes.
+# API routes are declared by the functions themselves (see `config.path`).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
