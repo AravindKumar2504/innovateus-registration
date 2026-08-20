@@ -92,7 +92,8 @@ limiting, and a double-opt-in confirmation email before treating `consent_at` as
 - Series display order: production sorts by data not exposed by the public API (likely next
   upcoming workshop date); this prototype keeps the API's order.
 - Placeholder text is `#6b7280` instead of production's `#9ca3af`, which fails WCAG 1.4.3
-  contrast on white (2.5:1); same for a visible "required" note under the card title.
+  contrast on white (2.5:1). The card header also adds a short "fields marked with an
+  asterisk are required" note that production doesn't have.
 - The footer subscribe form points visitors to the registration form / production mailing
   list instead of silently accepting an email it can't store (the `cw_intake` collection
   requires name fields).
