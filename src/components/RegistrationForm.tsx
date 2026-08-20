@@ -95,6 +95,9 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
     if (govOrg === '') {
       found.gov_org = 'Please select an answer.';
     }
+    if (showGovLevel && govLevel === '') {
+      found.gov_level = 'Please select a level of government.';
+    }
     if (!workshop && selectedSeries.size === 0) {
       found.series = 'Please select at least one series to continue.';
     }
@@ -134,7 +137,7 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
       gov_org: govOrg,
       ...(showGovLevel && govLevel !== '' ? { gov_level: govLevel } : {}),
       ...(workshop
-        ? { workshop: { id: workshop.id, title: workshop.title, series: workshop.series } }
+        ? { workshop_id: workshop.id }
         : { series: chosenSeries.map((series) => series.title) }),
       newsletter,
       website,
@@ -181,7 +184,7 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
   return (
     <div className="registration-card">
       <div className="registration-card__header">
-        <h2 className="registration-card__title">Registration Details</h2>
+        <h2 className="registration-card__title eyebrow">Registration Details</h2>
         <p className="form-description">
           Fields marked with an asterisk (<span aria-hidden="true">*</span>
           <span className="sr-only">star</span>) are required.
@@ -253,54 +256,65 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor={FIELD_IDS.country}>Country</label>
-          <select
-            id={FIELD_IDS.country}
-            className="form-select"
-            aria-required="true"
-            value={country}
-            onChange={(event) => {
-              setCountry(event.target.value);
-              if (event.target.value !== 'United States') setStateCode('');
-            }}
-            {...errorProps('country')}
-          >
-            <option value="">Select country (required)</option>
-            {COUNTRY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          {fieldError('country')}
-        </div>
-
-        {showState && (
+        <div className="form-row">
           <div className="form-group">
-            <label htmlFor={FIELD_IDS.state}>State/Province</label>
+            <label htmlFor={FIELD_IDS.country}>
+              Country
+              <RequiredMark />
+            </label>
             <select
-              id={FIELD_IDS.state}
+              id={FIELD_IDS.country}
               className="form-select"
-              autoComplete="address-level1"
               aria-required="true"
-              value={stateCode}
-              onChange={(event) => setStateCode(event.target.value)}
-              {...errorProps('state')}
+              value={country}
+              onChange={(event) => {
+                setCountry(event.target.value);
+                if (event.target.value !== 'United States') setStateCode('');
+              }}
+              {...errorProps('country')}
             >
-              <option value="">Select state (required)</option>
-              {US_STATE_CODES.map((code) => (
-                <option key={code} value={code}>
-                  {code}
+              <option value="">Select country (required)</option>
+              {COUNTRY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
                 </option>
               ))}
             </select>
-            {fieldError('state')}
+            {fieldError('country')}
           </div>
-        )}
+
+          {showState && (
+            <div className="form-group">
+              <label htmlFor={FIELD_IDS.state}>
+                State/Province
+                <RequiredMark />
+              </label>
+              <select
+                id={FIELD_IDS.state}
+                className="form-select"
+                autoComplete="address-level1"
+                aria-required="true"
+                value={stateCode}
+                onChange={(event) => setStateCode(event.target.value)}
+                {...errorProps('state')}
+              >
+                <option value="">Select state (required)</option>
+                {US_STATE_CODES.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+              {fieldError('state')}
+            </div>
+          )}
+        </div>
 
         <div className="form-group">
-          <label htmlFor={FIELD_IDS.gov_org}>{GOV_ORG_QUESTION}</label>
+          <label htmlFor={FIELD_IDS.gov_org}>
+            {GOV_ORG_QUESTION}
+            <RequiredMark />
+          </label>
           <select
             id={FIELD_IDS.gov_org}
             className="form-select"
@@ -324,10 +338,14 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
 
         {showGovLevel && (
           <div className="form-group">
-            <label htmlFor={FIELD_IDS.gov_level}>{GOV_LEVEL_QUESTION}</label>
+            <label htmlFor={FIELD_IDS.gov_level}>
+              {GOV_LEVEL_QUESTION}
+              <RequiredMark />
+            </label>
             <select
               id={FIELD_IDS.gov_level}
               className="form-select"
+              aria-required="true"
               value={govLevel}
               onChange={(event) => setGovLevel(event.target.value)}
               {...errorProps('gov_level')}
@@ -363,7 +381,14 @@ export default function RegistrationForm({ workshop, seriesList, onSuccess }: Pr
           <SeriesSelector
             seriesList={seriesList}
             selected={selectedSeries}
-            onChange={setSelectedSeries}
+            onChange={(next) => {
+              setSelectedSeries(next);
+              // A non-empty selection resolves the "select at least one
+              // series" error immediately, not on the next submit.
+              if (next.size > 0 && errors.series) {
+                setErrors(({ series: _series, ...rest }) => rest);
+              }
+            }}
             error={errors.series}
           />
         )}

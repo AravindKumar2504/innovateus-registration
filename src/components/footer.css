@@ -1,5 +1,11 @@
 .site-footer {
-  background: linear-gradient(180deg, #134175, #142941 53.85%, #142941 90%, #134175);
+  background: linear-gradient(
+    180deg,
+    var(--color-footer-top),
+    var(--color-footer-mid) 53.85%,
+    var(--color-footer-mid) 90%,
+    var(--color-footer-top)
+  );
   color: #fff;
   padding-bottom: 20px;
 }
@@ -136,7 +142,7 @@
 
 .site-footer__column--subscribe {
   gap: 20px;
-  min-width: 300px;
+  min-width: min(300px, 100%);
 }
 
 .site-footer__subscribe-heading {

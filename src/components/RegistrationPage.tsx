@@ -107,7 +107,18 @@ export default function RegistrationPage() {
         </div>
       )}
 
-      {(workshop || catalog.status === 'ready') && (
+      {needsCatalog && catalog.status === 'ready' && catalog.series.length === 0 && (
+        <div className="page-error" role="status">
+          <p className="page-error__message">
+            No event series are currently open for registration. Please check back soon.
+          </p>
+          <button type="button" className="btn btn-secondary" onClick={retryFetch}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      {(workshop || (catalog.status === 'ready' && catalog.series.length > 0)) && (
         <RegistrationForm
           key={formKey}
           workshop={workshop}

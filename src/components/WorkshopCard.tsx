@@ -24,11 +24,11 @@ export default function WorkshopCard({ workshop }: { workshop: Workshop }) {
         )}
         <div className="workshop-card__series-text">
           <p className="workshop-card__series-label">Part of the series</p>
-          <p className="workshop-card__series-title">{workshop.series}</p>
+          <p className="workshop-card__series-title eyebrow">{workshop.series}</p>
         </div>
       </div>
       <div className="workshop-card__content">
-        <p className="workshop-card__label">Workshop</p>
+        <p className="workshop-card__label eyebrow">Workshop</p>
         <h2 className="workshop-card__title">{workshop.title}</h2>
         <dl className="workshop-card__details">
           {details.map(([label, value]) => (

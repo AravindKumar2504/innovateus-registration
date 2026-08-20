@@ -62,7 +62,9 @@ export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
 
-  // Close dropdowns on outside click or Escape.
+  // Close dropdowns on outside click or Escape. When Escape closes a menu
+  // whose contents held focus, return focus to that menu's trigger button so
+  // keyboard users aren't stranded on <body> (WCAG 2.4.3).
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
@@ -70,10 +72,16 @@ export default function SiteHeader() {
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpenMenu(null);
-        setMobileOpen(false);
+      if (event.key !== 'Escape') return;
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && navRef.current?.contains(active)) {
+        const trigger = active
+          .closest('.site-nav__item, .site-nav')
+          ?.querySelector<HTMLButtonElement>('.site-nav__trigger, .site-nav__hamburger');
+        trigger?.focus();
       }
+      setOpenMenu(null);
+      setMobileOpen(false);
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
@@ -91,7 +99,6 @@ export default function SiteHeader() {
           type="button"
           className="site-nav__trigger"
           aria-expanded={open}
-          aria-haspopup="true"
           onClick={() => setOpenMenu(open ? null : item.label)}
           onMouseEnter={() => setOpenMenu(item.label)}
         >
@@ -172,10 +179,17 @@ export default function SiteHeader() {
 
         {mobileOpen && (
           <div id="mobile-menu" className="site-nav__mobile">
-            {NAV_ITEMS.map((item) =>
+            {NAV_ITEMS.map((item, index) =>
               item.items ? (
-                <div key={item.label} className="site-nav__mobile-group">
-                  <span className="site-nav__mobile-heading">{item.label}</span>
+                <div
+                  key={item.label}
+                  className="site-nav__mobile-group"
+                  role="group"
+                  aria-labelledby={`mobile-group-${index}`}
+                >
+                  <span id={`mobile-group-${index}`} className="site-nav__mobile-heading">
+                    {item.label}
+                  </span>
                   {item.items.map((child) => (
                     <a key={child.label} className="site-nav__mobile-link" href={child.href}>
                       {child.label}

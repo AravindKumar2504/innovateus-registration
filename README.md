@@ -40,9 +40,9 @@ everything, so hand-crafted requests can't write arbitrary data either.
 | Country | `country` | `United States` \| `Outside the United States` |
 | State/Province | `state` | **only when country = United States**; USPS code, else `null` |
 | Government question | `gov_org` | the **verbatim** option text |
-| Level of government | `gov_level` | **only when `gov_org` is a "Yes…"** answer; optional |
+| Level of government | `gov_level` | **only when `gov_org` is a "Yes…"** answer — and then required, as on production |
 | Series checkboxes | `workshop_series` | selected series titles, **comma-joined** |
-| `?workshop=<id>` flow | `workshops` | `"<title> (<id>)"` — only in single-workshop mode; `workshop_series` then holds the parent series |
+| `?workshop=<id>` flow | `workshops` | `"<title> (<id>)"` — only in single-workshop mode; the client sends **only the id** and the server resolves title + parent series, so they can't be forged |
 | **Newsletter opt-in (new)** | `newsletter` | required boolean, always sent |
 | — | `consent_at` | **stamped server-side** (`new Date().toISOString()`) only when `newsletter` is `true`, else `null` — client clocks can't be trusted for consent records |
 
@@ -50,12 +50,21 @@ everything, so hand-crafted requests can't write arbitrary data either.
 
 - Directus token: server-side env var only; `.env` is gitignored (`.env.example` documents it).
 - The function whitelists fields — nothing from the request body is forwarded verbatim.
-- Enum validation against the exact production option strings; length caps; 20KB body limit;
-  405 on non-POST; generic 502s to the client while details go to server logs.
-- **Honeypot** anti-spam field (as on production): bots that fill it get a fake `200 OK`
-  and nothing is written, so they can't learn they were filtered.
-- Production also runs Cloudflare Turnstile; that requires a site key, so this prototype
-  stops at the honeypot and notes Turnstile as the production hardening step.
+- Enum validation against the exact production option strings; length caps; 20KB body limit
+  (checked in bytes, and early via `Content-Length`); 405 on non-POST; generic 502s to the
+  client while details go to server logs.
+- All string inputs are stripped of ASCII control characters, and free text destined for
+  spreadsheet exports (series titles) is defanged against CSV formula injection.
+- **Honeypot** anti-spam field (as on production): bots that fill it get a response
+  byte-identical to a real success (`201`) and nothing is written.
+- Unit-tested: `npm test` runs a vitest suite over the function covering the honeypot,
+  every validation path, and the exact Directus payload mapping.
+
+**Known limitations (deliberate, given the fixed `cw_intake` schema):** no idempotency key —
+a submission retried after a lost response can create a duplicate row (deduplicable by
+email + timestamp); no rate limiting; newsletter consent is single-opt-in. In production I'd
+add Cloudflare Turnstile (which the real form uses; it needs a site key), Netlify rate
+limiting, and a double-opt-in confirmation email before treating `consent_at` as consent.
 
 ## Accessibility
 
@@ -81,6 +90,8 @@ everything, so hand-crafted requests can't write arbitrary data either.
 
 - Series display order: production sorts by data not exposed by the public API (likely next
   upcoming workshop date); this prototype keeps the API's order.
+- Placeholder text is `#6b7280` instead of production's `#9ca3af`, which fails WCAG 1.4.3
+  contrast on white (2.5:1); same for a visible "required" note under the card title.
 - The footer subscribe form points visitors to the registration form / production mailing
   list instead of silently accepting an email it can't store (the `cw_intake` collection
   requires name fields).
@@ -88,14 +99,17 @@ everything, so hand-crafted requests can't write arbitrary data either.
 
 ## Run locally
 
+Requires **Node ≥ 22** (see `.nvmrc` / `engines`).
+
 ```bash
 npm install
 cp .env.example .env   # paste the Directus token
 npm run dev            # netlify dev: SPA + functions on http://localhost:8888
 ```
 
-`npm run typecheck` type-checks the app, the functions, and the config;
-`npm run lint` runs oxlint; `npm run build` produces the deployable `dist/`.
+`npm test` runs the function's vitest suite; `npm run typecheck` type-checks the app, the
+functions, and the config; `npm run lint` runs oxlint; `npm run build` produces the
+deployable `dist/`.
 
 > Troubleshooting: on corporate machines with TLS interception (Zscaler etc.), the functions'
 > outbound HTTPS needs a Node version that reads the system keychain (Node ≥ 23) or

@@ -23,10 +23,12 @@
   /* Form */
   --color-input-text: #2d3748;
   --color-border: #e2e8f0;
-  --color-placeholder: #9ca3af;
+  /* Production uses #9ca3af (2.5:1); darkened to meet WCAG 1.4.3 on white. */
+  --color-placeholder: #6b7280;
   --color-muted: #4a5568;
   --color-subtle: #6b7280;
   --color-danger: #dc3545;
+  --color-cta-blue: #006be0;
 
   /* Footer */
   --color-footer-top: #134175;
@@ -106,6 +108,16 @@ textarea:focus-visible {
 
 .skip-link:focus {
   left: 0;
+}
+
+/* Small uppercase section label used on the card and workshop headers. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.39px;
+  line-height: 20px;
+  text-transform: uppercase;
 }
 
 @media (prefers-reduced-motion: reduce) {

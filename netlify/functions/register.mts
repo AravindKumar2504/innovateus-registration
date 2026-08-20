@@ -7,6 +7,7 @@ import {
   US_STATE_CODES,
   isGovYes,
 } from '../../src/lib/options';
+import { findWorkshop } from '../../src/lib/workshops';
 
 /**
  * POST /api/register
@@ -48,16 +49,31 @@ const json = (status: number, body: unknown): Response =>
 const fail = (status: number, error: string, fieldErrors?: Record<string, string>): Response =>
   json(status, { ok: false, error, ...(fieldErrors ? { fieldErrors } : {}) });
 
+/**
+ * Trim and strip ASCII control characters — nothing on this form has a
+ * legitimate use for them, and stripping here covers every field at once.
+ */
 const asTrimmedString = (value: unknown): string =>
-  typeof value === 'string' ? value.trim() : '';
+  // eslint-disable-next-line no-control-regex -- stripping controls is the point
+  typeof value === 'string' ? value.replace(/[\u0000-\u001F\u007F]/g, ' ').trim() : '';
+
+/**
+ * Free text destined for spreadsheet exports: additionally defang leading
+ * formula characters (CSV-injection). No real series title starts with these.
+ */
+const asSafeText = (value: unknown): string => asTrimmedString(value).replace(/^[=+@-]+/, '');
 
 export default async (req: Request): Promise<Response> => {
   if (req.method !== 'POST') {
     return fail(405, 'Method not allowed.');
   }
 
+  const declaredLength = Number(req.headers.get('content-length') ?? 0);
+  if (declaredLength > MAX_BODY_BYTES) {
+    return fail(413, 'Request too large.');
+  }
   const rawBody = await req.text();
-  if (rawBody.length > MAX_BODY_BYTES) {
+  if (new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES) {
     return fail(413, 'Request too large.');
   }
 
@@ -72,10 +88,10 @@ export default async (req: Request): Promise<Response> => {
     return fail(400, 'Invalid request body.');
   }
 
-  // Honeypot: humans never see this field. Pretend success so bots
-  // cannot tell they were filtered.
+  // Honeypot: humans never see this field. Pretend success — with the same
+  // status code as a real write — so bots cannot tell they were filtered.
   if (asTrimmedString(body.website) !== '') {
-    return json(200, { ok: true });
+    return json(201, { ok: true });
   }
 
   const fieldErrors: Record<string, string> = {};
@@ -117,37 +133,35 @@ export default async (req: Request): Promise<Response> => {
     fieldErrors.gov_org = 'Please answer the government-organization question.';
   }
 
-  // The level question only applies to "Yes" answers; it is optional even
-  // then, but if provided it must be one of the offered options.
+  // The level question only applies to "Yes" answers — and is then required,
+  // matching the production form.
   let govLevel: string | null = null;
   if (isGovYes(govOrg)) {
     const submitted = asTrimmedString(body.gov_level);
-    if (submitted !== '') {
-      if (!(GOV_LEVEL_OPTIONS as readonly string[]).includes(submitted)) {
-        fieldErrors.gov_level = 'Please choose a level of government from the list.';
-      } else {
-        govLevel = submitted;
-      }
+    if (!(GOV_LEVEL_OPTIONS as readonly string[]).includes(submitted)) {
+      fieldErrors.gov_level = 'Please choose a level of government from the list.';
+    } else {
+      govLevel = submitted;
     }
   }
 
   // Exactly one of: a list of series titles, or a single workshop.
+  // In workshop mode the client sends only the id — title and parent series
+  // are resolved server-side so they can't be forged.
   let workshopSeries = '';
   let workshops: string | null = null;
-  const workshop = body.workshop as { id?: unknown; title?: unknown; series?: unknown } | undefined;
-  if (workshop && typeof workshop === 'object') {
-    const id = asTrimmedString(workshop.id);
-    const title = asTrimmedString(workshop.title);
-    const series = asTrimmedString(workshop.series);
-    if (!id || !title || !series) {
-      fieldErrors.workshop = 'Workshop details are incomplete.';
+  const workshopId = asTrimmedString(body.workshop_id);
+  if (workshopId !== '') {
+    const workshop = findWorkshop(workshopId);
+    if (!workshop) {
+      fieldErrors.workshop_id = 'This workshop is no longer available.';
     } else {
-      workshops = `${title} (${id})`.slice(0, MAX_TEXT_LENGTH);
-      workshopSeries = series.slice(0, MAX_TEXT_LENGTH);
+      workshops = `${workshop.title} (${workshop.id})`.slice(0, MAX_TEXT_LENGTH);
+      workshopSeries = workshop.series.slice(0, MAX_TEXT_LENGTH);
     }
   } else {
     const series = Array.isArray(body.series)
-      ? body.series.map(asTrimmedString).filter((title) => title.length > 0)
+      ? body.series.map(asSafeText).filter((title) => title.length > 0)
       : [];
     if (series.length === 0) {
       fieldErrors.series = 'Please select at least one series.';

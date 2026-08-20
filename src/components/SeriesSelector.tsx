@@ -36,7 +36,9 @@ export default function SeriesSelector({ seriesList, selected, onChange, error }
       <h3 className="series-section__title" aria-hidden="true">
         Selected Event Series
       </h3>
-      <p className="series-section__subtitle">You are registering for event series.</p>
+      <p className="series-section__subtitle">
+        You are registering for {selected.size > 0 ? `${selected.size} ` : ''}event series.
+      </p>
 
       <div className="select-all-container">
         <button type="button" className="btn btn-secondary" onClick={toggleAll}>

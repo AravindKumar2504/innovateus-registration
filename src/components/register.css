@@ -58,13 +58,7 @@
 
 .registration-card__title {
   color: var(--color-brand-navy);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.39px;
-  line-height: 20px;
   margin: 0 0 0.5rem;
-  text-transform: uppercase;
 }
 
 .form-description {
@@ -160,7 +154,10 @@
   width: 100%;
 }
 
-.form-group input:focus,
+/* Text-like controls swap the outline for a border ring; checkboxes keep
+   the global :focus-visible outline (WCAG 2.4.7). */
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
 .form-select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
@@ -317,17 +314,7 @@
   font-weight: 500;
 }
 
-/* ---- Honeypot (never shown to real visitors) ---- */
-
-.honeypot-field {
-  height: 1px;
-  left: -9999px;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  width: 1px;
-}
+/* ---- Honeypot (never rendered for real visitors or screen readers) ---- */
 
 .honeypot-field input,
 .honeypot-field label {
@@ -449,23 +436,13 @@
   margin: 0;
 }
 
-.workshop-card__series-title {
-  font-weight: 700;
-  letter-spacing: 0.39px;
-  text-transform: uppercase;
-}
-
 .workshop-card__content {
   color: var(--color-brand-navy);
   padding: 2rem;
 }
 
 .workshop-card__label {
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
   margin: 0 0 0.75rem;
-  text-transform: uppercase;
 }
 
 .workshop-card__title {

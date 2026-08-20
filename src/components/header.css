@@ -74,7 +74,7 @@
   padding: 12px 20px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
   .partner-banner__desktop {
     display: none;
   }
@@ -175,7 +175,7 @@
 }
 
 .site-nav__cta {
-  border: 1.5px solid #006be0;
+  border: 1.5px solid var(--color-cta-blue);
   border-radius: 100px;
   color: var(--color-brand-navy);
   font-size: 13px;
@@ -192,7 +192,7 @@
 }
 
 .site-nav__cta:hover {
-  background: #006be0;
+  background: var(--color-cta-blue);
   color: #fff;
 }
 
@@ -245,7 +245,7 @@
   margin: 12px 0 0;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
   .site-header {
     padding: 12px 24px;
   }

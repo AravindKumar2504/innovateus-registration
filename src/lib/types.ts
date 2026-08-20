@@ -41,8 +41,12 @@ export interface RegistrationRequest {
   gov_level?: string;
   /** Titles of the selected series (series mode). */
   series?: string[];
-  /** The single workshop being registered for (?workshop=<id> mode). */
-  workshop?: { id: string; title: string; series: string };
+  /**
+   * The single workshop being registered for (?workshop=<id> mode).
+   * Only the id crosses the wire — the server resolves title and parent
+   * series itself so they can't be forged.
+   */
+  workshop_id?: string;
   newsletter: boolean;
   /** Honeypot — humans never fill this. */
   website?: string;
