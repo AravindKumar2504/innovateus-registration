@@ -26,10 +26,11 @@ actual schema. I directed it iteratively — extract the spec, build, then test 
 run an adversarial multi-agent review of its own code for correctness, security, and WCAG
 issues before I accepted anything.
 
-I tested at three levels: UI (conditional fields, error focus, keyboard use), API (invalid
-enums rejected with 422s, honeypot writes nothing), and end-to-end against the real
-collection with made-up emails, verifying every stored row against the field notes. The
-final submission carries my real name.
+I tested at four levels: UI (conditional fields, error focus, keyboard use), a 16-test
+vitest suite pinning the function's validation and exact Directus payload, API probes
+(invalid enums rejected with 422s, honeypot writes nothing), and end-to-end against the
+real collection with made-up emails, verifying every stored row against the field notes.
+The final submission carries my real name.
 
 ---
 
